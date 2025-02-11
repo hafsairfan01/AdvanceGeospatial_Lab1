@@ -1,4 +1,4 @@
-Flask
-Flask-Session
-psycopg2-binary
-SQLAlchemy
+Flask - installed
+Flask-Session - installed
+psycopg2-binary - installed
+SQLAlchemy - installed

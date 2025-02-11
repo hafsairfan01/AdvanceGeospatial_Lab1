@@ -1,0 +1,78 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Home</title>
+    <link rel="stylesheet" href="css/style.css">
+    <link href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css" rel="stylesheet">
+    <script src="https://code.jquery.com/jquery-3.5.1.slim.min.js"></script>
+    <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.bundle.min.js"></script>
+
+    <style>
+        body {font-family: Arial, sans-serif; margin: 0; padding: 0; background-color: #f1d8d8;}
+        #main-header {background-color: #243547; color: white; padding: 100px 20px; text-align: center;}
+        header h1 {font-size: 2.5rem; margin-bottom: 10px;}
+        header p {font-size: 1.2rem;}
+        main {margin-top: 50px; padding: 20px;}
+        .bold-heading {font-weight: bold;}
+        main {flex-grow: 1;}
+        #main-footer {background-color: #343a40; color: white; padding: 20px 0; text-align: center;}
+        /* Mobile-responsive tweaks */
+        @media (max-width: 768px) {
+            header {padding: 150px 20px;}
+            .section-title {font-size: 1.8rem;}
+            .section-content {font-size: 1rem;}
+        }
+    </style>
+</head>
+
+<body>
+
+    <header id="main-header">
+        <h1>Welcome to the Book Search</h1>
+        <p>Search for your favorite books by ISBN, title, or author.</p>
+    </header>
+
+    <main>
+        <section>
+            <h2 style="color: #7e1313d8; font-weight: bold; margin-top: -50px; margin-bottom: 30px;">Search for Books</h2>
+
+            <!-- Search Form -->
+            <form method="POST" action="{{ url_for('home') }}">
+                <div class="form-group">
+                    <input type="text" class="form-control" name="query" placeholder="Search by ISBN, title, or author" required>
+                </div>
+                <button type="submit" class="btn btn-primary">Search</button>
+            </form>
+
+            {% if books %}
+                <h3>Search Results:</h3>
+                <ul class="list-group mt-3">
+                    {% for book in books %}
+                        <li class="list-group-item">
+                            <strong>{{ book['title'] }}</strong> by {{ book['author'] }} <br>
+                            <em>ISBN: {{ book['isbn'] }}</em> <br>
+                            <a href="{{ url_for('book_details', isbn=book['isbn']) }}" class="btn btn-info mt-2">View Details</a>
+                        </li>
+                    {% endfor %}
+                </ul>
+            {% elif query %}
+                <p>No results found for "<strong>{{ query }}</strong>".</p>
+            {% endif %}
+
+            <!-- Logout Button -->
+            <div class="d-flex justify-content-center mt-3">
+                <a href="{{ url_for('logout') }}" class="btn btn-danger">Logout</a>
+            </div>
+        </section>
+    </main>
+
+    <footer id="main-footer">
+        <p>&copy; 2025 My Website. All rights reserved.</p>
+    </footer>
+
+</body>
+
+</html>
