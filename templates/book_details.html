@@ -1,0 +1,60 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Book Details</title>
+    <link rel="stylesheet" href="css/style.css">
+    <link href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css" rel="stylesheet">
+</head>
+
+<body style="background-color: #f1d8d8; display: flex; flex-direction: column; height: 100vh;">
+
+    <!-- Back to Home Button (Positioned at Top Right) -->
+    <div class="d-flex justify-content-end mt-3">
+        <a href="{{ url_for('home') }}" class="btn btn-secondary">Back to Home</a>
+    </div>
+
+    <!-- Header Section -->
+    <header id="main-header" class="text-center py-5" style="background-color: #243547; color: white;">
+        <h1>{{ book[1] }}</h1>  <!-- Book Title -->
+        <p>by {{ book[2] }}</p> <!-- Book Author -->
+    </header>
+
+    <!-- Main Content -->
+    <main class="container mt-5 flex-grow-1">
+        <div class="row">
+            <div class="col-md-8 offset-md-2">
+                <h3 class="mb-4" style="color: #7e1313d8; font-weight: bold;">Book Details</h3>
+                <ul class="list-group">
+                    <li class="list-group-item">
+                        <strong>ISBN:</strong> {{ book[0] }} <!-- Book ISBN -->
+                    </li>
+                    <li class="list-group-item">
+                        <strong>Title:</strong> {{ book[1] }} <!-- Book Title -->
+                    </li>
+                    <li class="list-group-item">
+                        <strong>Author:</strong> {{ book[2] }} <!-- Book Author -->
+                    </li>
+                    <li class="list-group-item">
+                        <strong>Year:</strong> {{ book[3] }} <!-- Book Year -->
+                    </li>
+                </ul>
+
+                <!-- Logout Button above the footer -->
+                <div class="text-center mt-4">
+                    <a href="{{ url_for('logout') }}" class="btn btn-danger">Logout</a>
+                </div>
+            </div>
+        </div>
+    </main>
+
+    <!-- Footer Section -->
+    <footer id="main-footer" class="text-center py-3" style="background-color: #343a40; color: white;">
+        <p>&copy; 2025 My Website. All rights reserved.</p>
+    </footer>
+
+</body>
+
+</html>

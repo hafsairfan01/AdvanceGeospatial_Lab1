@@ -19,7 +19,7 @@ def create_table():
     
     # Create the books table if it doesn't exist
     cur.execute("""
-        CREATE TABLE IF NOT EXISTS Books (
+        CREATE TABLE IF NOT EXISTS books (
             isbn VARCHAR(20) PRIMARY KEY,
             title VARCHAR(255) NOT NULL,
             author VARCHAR(255) NOT NULL,
@@ -44,7 +44,7 @@ def import_books_from_csv(csv_file):
             for row in csv_reader:
                 # Insert each book record into the PostgreSQL table
                 cur.execute("""
-                    INSERT INTO Books (isbn, title, author, year)
+                    INSERT INTO books (isbn, title, author, year)
                     VALUES (%s, %s, %s, %s)
                     ON CONFLICT (isbn) DO NOTHING;
                 """, (row['isbn'], row['title'], row['author'], row['year']))

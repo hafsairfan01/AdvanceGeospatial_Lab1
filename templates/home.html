@@ -11,19 +11,73 @@
     <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.bundle.min.js"></script>
 
     <style>
-        body {font-family: Arial, sans-serif; margin: 0; padding: 0; background-color: #f1d8d8;}
-        #main-header {background-color: #243547; color: white; padding: 100px 20px; text-align: center;}
-        header h1 {font-size: 2.5rem; margin-bottom: 10px;}
-        header p {font-size: 1.2rem;}
-        main {margin-top: 50px; padding: 20px;}
-        .bold-heading {font-weight: bold;}
-        main {flex-grow: 1;}
-        #main-footer {background-color: #343a40; color: white; padding: 20px 0; text-align: center;}
-        /* Mobile-responsive tweaks */
-        @media (max-width: 768px) {
-            header {padding: 150px 20px;}
-            .section-title {font-size: 1.8rem;}
-            .section-content {font-size: 1rem;}
+        body {
+            font-family: Arial, sans-serif;
+            margin: 0;
+            padding: 0;
+            background-color: #f1d8d8;
+            display: flex;
+            flex-direction: column;
+            height: 100vh;
+        }
+
+        #main-header {
+            background-color: #243547;
+            color: white;
+            padding: 100px 20px;
+            text-align: center;
+        }
+
+        header h1 {
+            font-size: 2.5rem;
+            margin-bottom: 10px;
+        }
+
+        header p {
+            font-size: 1.2rem;
+        }
+
+        main {
+            margin-top: 50px;
+            padding: 20px;
+            padding-bottom: 30px;
+        }
+
+        .bold-heading {
+            font-weight: bold;
+        }
+
+        main {
+            flex-grow: 1;
+        }
+
+        #main-footer {
+            background-color: #343a40;
+            color: white;
+            padding: 20px 0;
+            text-align: center;
+            position: relative;
+            width: 100%;
+        }
+        .logout-btn {
+            margin-bottom: 30px; 
+            display: flex;
+            justify-content: center;
+        }
+
+        .result-item {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            background-color: #fff;
+            margin-bottom: 10px;
+            padding: 10px;
+            border: 1px solid #ddd;
+            border-radius: 5px;
+        }
+
+        .result-item a {
+            margin-left: 10px;
         }
     </style>
 </head>
@@ -48,18 +102,22 @@
             </form>
 
             {% if books %}
-                <h3>Search Results:</h3>
-                <ul class="list-group mt-3">
-                    {% for book in books %}
-                        <li class="list-group-item">
-                            <strong>{{ book['title'] }}</strong> by {{ book['author'] }} <br>
-                            <em>ISBN: {{ book['isbn'] }}</em> <br>
-                            <a href="{{ url_for('book_details', isbn=book['isbn']) }}" class="btn btn-info mt-2">View Details</a>
-                        </li>
-                    {% endfor %}
-                </ul>
+            
+            <h3 style="color: #7e1313d8; margin-top: 20px; margin-bottom: 20px;">Search Results:</h3>
+
+            <div class="list-group mt-3">
+                {% for book in books %}
+                <div class="result-item">
+                    <div>
+                        <strong>{{ book[1] }}</strong> <br>
+                        <em>by {{ book[2] }}</em> <!-- book[1] is the title and book[2] is the author -->
+                    </div>
+                    <a href="{{ url_for('book_details', search=book[0]) }}" class="btn btn-info">View Details</a>
+                </div>
+                {% endfor %}
+            </div>
             {% elif query %}
-                <p>No results found for "<strong>{{ query }}</strong>".</p>
+            <p>No results found for "<strong>{{ query }}</strong>".</p>
             {% endif %}
 
             <!-- Logout Button -->
