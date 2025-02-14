@@ -12,7 +12,7 @@ def get_db_connection():
     )
     return conn
 
-# Function to create the table if it doesn't exist
+# Create the table if it doesn't exist
 def create_table():
     conn = get_db_connection()
     cur = conn.cursor()
@@ -34,7 +34,7 @@ def create_table():
 # Function to import books from CSV file into PostgreSQL
 def import_books_from_csv(csv_file):
     conn = get_db_connection()
-    cur = conn.cursor()  # cursor is defined here inside the function
+    cur = conn.cursor()  
     
     try:
         # Open the CSV file and read its contents
@@ -56,8 +56,8 @@ def import_books_from_csv(csv_file):
     except Exception as e:
         print(f"An error occurred: {e}")
     finally:
-        cur.close()  # Close the cursor
-        conn.close()  # Close the connection
+        cur.close()  
+        conn.close()  
 
 if __name__ == "__main__":
     # Create the table if it doesn't exist

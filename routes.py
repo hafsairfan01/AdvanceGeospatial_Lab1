@@ -3,7 +3,7 @@ import psycopg2
 from werkzeug.security import generate_password_hash, check_password_hash
 
 app = Flask(__name__)
-app.secret_key = 'fgfgfgf uidihhchh'   # Use a strong secret key in production
+app.secret_key = 'fgfgfgf uidihhchh'   
 
 # Database connection setup
 def get_db_connection():
@@ -18,7 +18,6 @@ def get_db_connection():
 @app.route('/register', methods=['GET', 'POST'])
 def register():
     if request.method == 'POST':
-        # Get the form data
         username = request.form['username']
         password = request.form['password']
         confirm_password = request.form['confirm_password']
@@ -85,7 +84,7 @@ def home():
         conn = get_db_connection()
         cur = conn.cursor()
 
-        # Search for books by ISBN, title, or author using SQL LIKE for partial matches
+        # Search for books by ISBN, title, or author
         cur.execute("""
             SELECT * FROM Books
             WHERE isbn LIKE %s OR title LIKE %s OR author LIKE %s
@@ -103,18 +102,17 @@ def book_details(search):
     conn = get_db_connection()
     cur = conn.cursor()
 
-    # Use LIKE to allow for partial matching on ISBN, title, or author
     cur.execute("""
         SELECT * FROM Books
         WHERE isbn LIKE %s OR title LIKE %s OR author LIKE %s
     """, ('%' + search + '%', '%' + search + '%', '%' + search + '%'))
     
-    book = cur.fetchone()  # Fetch the first matching book
+    book = cur.fetchone() 
     
     cur.close()
     conn.close()
 
-    # Check if a book is found and pass it to the template
+    # Check if a book is found
     if book:
         return render_template('book_details.html', book=book)
     else:
@@ -125,7 +123,7 @@ def book_details(search):
 # Logout route
 @app.route('/logout', methods=['GET'])
 def logout():
-    session.pop('user_id', None)  # Remove user ID from session
+    session.pop('user_id', None) 
     return redirect(url_for('login'))  # Redirect to the login page after logout
 
 if __name__ == "__main__":
