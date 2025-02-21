@@ -35,25 +35,14 @@
           <li class="list-group-item"><strong>Year:</strong> {{ book[3] }}</li>
         </ul>
 
-        <!-- Google Books Data -->
-        {% if google_avg is not none and google_count is not none %}
-          <div class="mt-4">
-            <h4 class="mt-5" style="color: #7e1313d8; font-weight: bold;">Google Books Data</h4>
-            <p><strong>Average Rating (out of 5):</strong> {{ google_avg }}</p>
-            <p><strong>Number of Ratings:</strong> {{ google_count }}</p>
-          </div>
-        {% else %}
-          <p class="mt-4">No Google Books rating data found for this ISBN.</p>
-        {% endif %}
-
-        <!-- Existing Reviews Section (Local Reviews) -->
+        <!-- Existing Reviews Section (if you have `reviews` in your context) -->
         {% if reviews is defined %}
           <h3 class="mt-5" style="color: #7e1313d8; font-weight: bold;">Reviews</h3>
           {% if reviews %}
             <ul class="list-group mb-4">
               {% for r in reviews %}
                 <li class="list-group-item">
-                  <strong>Rating:</strong> {{ r[0] }}
+                  <strong>Rating:</strong> {{ r[0] }}  
                   <br><em>Reviewed by {{ r[3] }} on {{ r[2] }}</em>
                   <p>{{ r[1] }}</p>
                 </li>
@@ -69,8 +58,8 @@
           <h3 class="mb-4" style="color: #7e1313d8; font-weight: bold;">Submit Your Review</h3>
           <form action="{{ url_for('submit_review') }}" method="POST">
             <!-- Hidden field to pass the book identifier -->
-            <input type="hidden" name="book_isbn" value="{{ book[0] }}">
-            <!-- Make sure your backend reads "book_isbn" accordingly -->
+            <input type="hidden" name="book_isbn" value="{{ book[0] }}"> 
+            <!-- ^ change name to 'book_isbn' if your backend expects that -->
 
             <div class="form-group">
               <label for="rating">Rating (1-5):</label>
