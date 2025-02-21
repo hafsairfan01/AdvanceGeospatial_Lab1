@@ -46,6 +46,16 @@
           <p class="mt-4">No Google Books rating data found for this ISBN.</p>
         {% endif %}
 
+        <!-- Summarized Book Description (Gemini) -->
+        {% if gemini_summary %}
+        <div class="mt-5">
+          <h4 style="color: #7e1313d8; font-weight: bold;">Summarized Description (under 50 words)</h4>
+          <p>{{ gemini_summary }}</p>
+        </div>
+        {% else %}
+        <p class="mt-4">No summarized description found for this book.</p>
+        {% endif %}
+
         <!-- Existing Reviews Section (Local Reviews) -->
         {% if reviews is defined %}
           <h3 class="mt-5" style="color: #7e1313d8; font-weight: bold;">Reviews</h3>
