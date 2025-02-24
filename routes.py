@@ -1,8 +1,16 @@
-from flask import Flask, render_template, request, redirect, url_for, session, flash
+from flask import Flask, render_template, request, redirect, url_for, session, flash, jsonify
+from summary import summarize_with_gemini
+
 import psycopg2
 
 ### GOOGLE BOOKS INTEGRATION ###
 import requests
+###GEMINI API INTEGRATION###
+from dotenv import load_dotenv
+load_dotenv()  # loads variables from .env into os.environ
+
+import os
+gemini_key = os.environ.get("GEMINI_API_KEY")
 
 app = Flask(__name__)
 app.secret_key = 'fgfgfgf uidihhchh'
@@ -60,36 +68,52 @@ def create_tables_if_not_exists():
     conn.commit()
     cur.close()
     conn.close()
-
+#-------------------------------------------------------------------------
 ### GOOGLE BOOKS INTEGRATION ###
-def get_google_books_review_data(isbn):
-    """
-    Queries the Google Books API with a book ISBN to retrieve:
-      - averageRating (float)
-      - ratingsCount (int)
-    Returns (average_rating, ratings_count) or (None, None) if not found.
-    """
+#---------------------------------------------------------------------------
+def get_google_books_info(isbn):
     url = "https://www.googleapis.com/books/v1/volumes"
     params = {"q": f"isbn:{isbn}"}
     try:
         response = requests.get(url, params=params)
-        response.raise_for_status()  # Raises an HTTPError if status code != 200
+        response.raise_for_status()
         data = response.json()
 
-        # 'items' is a list of book results; we take the first if it exists
-        items = data.get('items')
+        items = data.get('items', [])
         if not items:
-            return None, None
+            return None
 
         volume_info = items[0].get('volumeInfo', {})
-        average_rating = volume_info.get('averageRating')   
-        ratings_count = volume_info.get('ratingsCount')    
+        average_rating = volume_info.get('averageRating')
+        ratings_count = volume_info.get('ratingsCount')
+        description   = volume_info.get('description')
 
-        return average_rating, ratings_count
 
+        # 1) Parse industryIdentifiers for ISBN_10 and ISBN_13
+        industry_ids = volume_info.get('industryIdentifiers', [])
+        isbn_10 = None
+        isbn_13 = None
+        for identifier in industry_ids:
+            t = identifier.get('type')      # e.g. "ISBN_10" or "ISBN_13"
+            val = identifier.get('identifier')
+            if t == "ISBN_10":
+                isbn_10 = val
+            elif t == "ISBN_13":
+                isbn_13 = val
+
+        # 2) Return the extended dictionary with ISBN_10 and ISBN_13
+        return {
+            "average_rating": average_rating,
+            "ratings_count": ratings_count,
+            "description": description,
+            "isbn_10": isbn_10,
+            "isbn_13": isbn_13
+        }
     except (requests.RequestException, ValueError):
-        # If there's a network error, JSON decoding error, etc.
-        return None, None
+        return None
+
+#------------------------------------------------------------------------
+
 
 
 # ------------------------------------------------------------------------------
@@ -197,10 +221,6 @@ def home():
 # ------------------------------------------------------------------------------
 @app.route('/book_details/<search>', methods=['GET'])
 def book_details(search):
-    """
-    Displays details for the first matching book, 
-    shows local reviews, and fetches Google books data.
-    """
     if 'user_id' not in session:
         flash('Please log in first.', 'warning')
         return redirect(url_for('login'))
@@ -222,7 +242,6 @@ def book_details(search):
         return redirect(url_for('home'))
 
     # 2) Retrieve local reviews
-    # book[0] = isbn, book[1] = title, book[2] = author, book[3] = year
     isbn = book[0]
     cur.execute('''
         SELECT r.rating, r.review_text, r.created_at, u.username
@@ -236,16 +255,31 @@ def book_details(search):
     cur.close()
     conn.close()
 
-    ### GOOGLE BOOKS INTEGRATION ###
-    # 3) Fetch Google average rating & ratings count
-    google_average, google_count = get_google_books_review_data(isbn)
+    # 3) Get Google Books info, including the description
+    google_data = get_google_books_info(isbn)
+    google_avg = None
+    google_count = None
+    google_desc = None
 
-    # 4) Render the template with local + Google data
-    return render_template('book_details.html',
-                           book=book,
-                           reviews=reviews,
-                           google_avg=google_average,
-                           google_count=google_count)
+    if google_data:
+        google_avg = google_data["average_rating"]
+        google_count = google_data["ratings_count"]
+        google_desc = google_data["description"]
+
+    # 4) Summarize the description with Gemini
+    gemini_summary = None
+    if google_desc:
+        gemini_summary = summarize_with_gemini(google_desc)
+
+    # 5) Render the template with local + Google data + Gemini summary
+    return render_template(
+        'book_details.html',
+        book=book,
+        reviews=reviews,
+        google_avg=google_avg,
+        google_count=google_count,
+        gemini_summary=gemini_summary
+    )
 
 
 # ------------------------------------------------------------------------------
@@ -303,6 +337,67 @@ def submit_review():
 
     flash("Review submitted successfully!", "success")
     return redirect(url_for('book_details', search=book_isbn))
+
+#-------------------------------------------------------------------------------
+# Website’s /api/<isbn> Route
+#-------------------------------------------------------------------------------
+@app.route("/api/<isbn>", methods=["GET"])
+def book_api(isbn):
+    conn = get_db_connection()
+    cur = conn.cursor()
+
+    # 1) Check if book is in our local DB
+    cur.execute("""SELECT isbn, title, author, year 
+                   FROM "books" 
+                   WHERE isbn = %s""", (isbn,))
+    book = cur.fetchone()
+
+    if not book:
+        cur.close()
+        conn.close()
+        return jsonify({"error": "Book not found"}), 404
+
+    # 2) Gather local reviews info
+    cur.execute("""SELECT rating FROM "Reviews" WHERE book_isbn = %s""", (isbn,))
+    reviews_data = cur.fetchall()
+    review_count = len(reviews_data)
+    average_rating = sum(r[0] for r in reviews_data) / review_count if review_count else 0
+
+    # 3) Get Google Books info + ISBN_10, ISBN_13, description, etc.
+    google_info = get_google_books_info(isbn)
+    if google_info:
+        description = google_info.get("description")
+        isbn_10 = google_info.get("isbn_10")
+        isbn_13 = google_info.get("isbn_13")
+    else:
+        description = None
+        isbn_10 = None
+        isbn_13 = None
+
+    # 4) Summarize description using Gemini
+    if description:
+        summarized_desc = summarize_with_gemini(description)
+    else:
+        summarized_desc = None
+
+    # 5) Build the JSON response
+    response_data = {
+        "title": book[1],
+        "author": book[2],
+        "published_date": book[3],
+        "isbn_10": isbn_10,
+        "isbn_13": isbn_13,
+        "review_count": review_count,
+        "average_rating": average_rating,
+        "description": description,
+        "summarized_description": summarized_desc
+    }
+
+    cur.close()
+    conn.close()
+
+    return jsonify(response_data)
+
 
 # ------------------------------------------------------------------------------
 # Run the App

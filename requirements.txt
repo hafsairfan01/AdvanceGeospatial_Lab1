@@ -2,3 +2,4 @@ Flask - installed
 Flask-Session - installed
 psycopg2-binary - installed
 SQLAlchemy - installed
+requests - installed
