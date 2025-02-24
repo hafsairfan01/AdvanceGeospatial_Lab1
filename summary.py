@@ -9,18 +9,17 @@ def summarize_with_gemini(description):
     # 1) The base Gemini endpoint
     url = "https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent"
     
-    # 2) Retrieve your Gemini API key from an environment variable or config
+    # 2) Retrieve Gemini API key from an environment variable or config
     api_key = os.environ.get("GEMINI_API_KEY")  
-    # e.g. set GEMINI_API_KEY=abcdefg in your environment
 
     if not api_key:
         print("Gemini API key not found in environment.")
         return None
 
-    # 3) Construct the query parameters with your key
+    # 3) Construct the query parameters with key
     params = {"key": api_key}
 
-    # 4) Build the JSON body (the prompt telling Gemini what to do)
+    # 4) Build the JSON body
     prompt_text = f"summarize this text using less than 50 words: {description}"
     payload = {
         "contents": [{

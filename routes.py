@@ -94,7 +94,7 @@ def get_google_books_info(isbn):
         isbn_10 = None
         isbn_13 = None
         for identifier in industry_ids:
-            t = identifier.get('type')      # e.g. "ISBN_10" or "ISBN_13"
+            t = identifier.get('type')      
             val = identifier.get('identifier')
             if t == "ISBN_10":
                 isbn_10 = val
